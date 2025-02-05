@@ -1,12 +1,12 @@
 import NextPrev from "../../common/ui/NextPrev"
 import { useDeployPoAWizardStore } from "../config/store"
 
-export default function Welcome() {
+export default function Initialize() {
     const { goToNextStep, goToPreviousStep } = useDeployPoAWizardStore()
 
     return (
         <div>
-            <h1>Welcome</h1>
+            <h1>Initialize</h1>
             <NextPrev
                 nextDisabled={false}
                 prevHidden={false}
