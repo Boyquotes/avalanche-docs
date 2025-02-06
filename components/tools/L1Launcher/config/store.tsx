@@ -65,8 +65,6 @@ interface L1LauncherWizardState extends StepWizardState {
     tokenAllocations: AllocationEntry[];
     setTokenAllocations: (allocations: AllocationEntry[]) => void;
 
-    pChainBalance: string;
-    setPChainBalance: (balance: string) => void;
     getL1RpcEndpoint: () => string;
     getRpcEndpoint: () => string;
 
@@ -187,9 +185,6 @@ const L1LauncherWizardStoreFunc: StateCreator<L1LauncherWizardState> = (set, get
     rpcVerified: false,
     setRpcVerified: (verified) => set(() => ({ rpcVerified: verified })),
 
-    pChainBalance: "0",
-    setPChainBalance: (balance: string) => set(() => ({ pChainBalance: balance })),
-
     getRpcEndpoint: () => {
         const state = get();
         if (state.rpcLocationType === 'local') {
@@ -244,9 +239,13 @@ const L1LauncherWizardStoreFunc: StateCreator<L1LauncherWizardState> = (set, get
         const publicKeyHex = (await window.avalanche.request({
             "method": "avalanche_getAccountPubKey",
             "params": []
-        })).xp
+        })) as { xp: `0x${string}` , evm: `0x${string}` }
 
-        const pChainAddress = getXPAddressFromPublicKey(publicKeyHex, 'P', 'fuji')
+        if (publicKeyHex.xp === publicKeyHex.evm) {
+            throw new Error("The account is imported from the private key, we support only native core wallet accounts for now")
+        }
+
+        const pChainAddress = getXPAddressFromPublicKey(publicKeyHex.xp, 'P', 'fuji')
         set({ pChainAddress });
     }
 

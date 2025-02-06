@@ -33,9 +33,11 @@ export async function getPChainBalance(address: string): Promise<string> {
 
 
 export default function FundPChainWallet() {
-    const { nodesCount, pChainBalance, setPChainBalance, goToNextStep, goToPreviousStep, updatePChainAddressFromCore, pChainAddress } = useL1LauncherWizardStore();
+    const { nodesCount, goToNextStep, goToPreviousStep, updatePChainAddressFromCore, pChainAddress } = useL1LauncherWizardStore();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [pChainBalance, setPChainBalance] = useState<string>("0");
+
     const requiredAmount = nodesCount + 0.5;
     const currentPBalance = Number(pChainBalance) / 1e9;
     const hasEnoughFunds = currentPBalance >= (requiredAmount - TRANSFER_BUFFER);
