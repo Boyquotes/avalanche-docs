@@ -14,6 +14,12 @@ interface DeployPoAWizardState extends StepWizardState {
    evmChainIdHex: string;
    fillEVMChainIDFromRPC: () => Promise<string>
    getViemL1Chain: () => Chain
+
+   validatorMessagesAddress: string | null;
+   setValidatorMessagesAddress: (address: string) => void;
+
+   poaValidatorManagerAddress: string | null;
+   setPoaValidatorManagerAddress: (address: string) => void;
 }
 
 import { createStepWizardStore } from '../../common/ui/StepWizardStoreCreator';
@@ -72,6 +78,12 @@ const DeployPoAWizardStoreFunc: StateCreator<DeployPoAWizardState> = (set, get) 
             },
         } as const;
     },
+
+    validatorMessagesAddress: null,
+    setValidatorMessagesAddress: (address: string) => set({ validatorMessagesAddress: address }),
+
+    poaValidatorManagerAddress: null,
+    setPoaValidatorManagerAddress: (address: string) => set({ poaValidatorManagerAddress: address }),
 })
 
 const shouldPersist = true
