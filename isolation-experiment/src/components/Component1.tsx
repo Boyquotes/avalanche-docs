@@ -1,7 +1,7 @@
 import { useState } from "react";
 
-export default function Component1() {
-    const [count, setCount] = useState(0);
+export default function Component1({ initialCount = 0 }: { initialCount?: number }) {
+    const [count, setCount] = useState(initialCount);
     return (
         <div>
             <h1>Hi, I am Component 1</h1>

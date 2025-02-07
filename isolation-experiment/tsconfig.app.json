@@ -12,10 +12,9 @@
     "skipLibCheck": true,
     /* Bundler mode */
     "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
     "isolatedModules": true,
     "moduleDetection": "force",
-    "noEmit": true,
+    "noEmit": false,
     "declaration": true,
     "declarationDir": "dist",
     "jsx": "react-jsx",
@@ -28,7 +27,8 @@
     "noUncheckedSideEffectImports": true
   },
   "include": [
-    "src"
+    "src",
+    "src/index.ts"
   ],
   "exclude": [
     "node_modules",
