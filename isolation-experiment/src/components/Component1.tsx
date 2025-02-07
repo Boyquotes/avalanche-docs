@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export default function Component1({ initialCount = 0 }: { initialCount?: number }) {
+export default function Component1({ initialCount = 0 }: { initialCount: number }) {
     const [count, setCount] = useState(initialCount);
     return (
         <div>

@@ -4,7 +4,7 @@ import Component2 from './components/Component2'
 function App() {
     return (
         <>
-            <Component1 />
+            <Component1 initialCount={10} />
             <Component2 />
         </>
     )
