@@ -31,7 +31,7 @@ const support = [
 
 export default function Support() {
   return (
-    <div className="flex flex-col justify-center items-center px-4">
+    <div className="flex flex-col justify-center items-center px-4 mb-16">
       <h2 className="font-display text-3xl tracking-tight sm:text-5xl text-center flex items-center gap-3">
         <BadgeHelp className="w-8 h-8 sm:w-10 sm:h-10" /> Support & Socials
       </h2>

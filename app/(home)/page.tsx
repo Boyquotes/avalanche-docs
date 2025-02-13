@@ -3,6 +3,7 @@ import Features from '@/components/landing/features';
 import Development from '@/components/landing/development';
 import Ecosystem from '@/components/landing/ecosystem';
 import Support from '@/components/landing/support';
+import ActivityGrid from '@/components/landing/github-activity'
 
 export default function HomePage(): React.ReactElement {
   return (
@@ -13,6 +14,7 @@ export default function HomePage(): React.ReactElement {
           <Development />
           <Ecosystem />
           <Support />
+          <ActivityGrid />
       </main>
     </>
   );
