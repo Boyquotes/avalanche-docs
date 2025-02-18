@@ -6,7 +6,6 @@ import path from 'path';
 
 const currentFilePath = fileURLToPath(import.meta.url);
 const thisDir = path.dirname(currentFilePath);
-const releasesDir = path.join(thisDir, 'releases');
 
 async function getJsonFromURL(url) {
     return new Promise((resolve, reject) => {
@@ -45,12 +44,12 @@ async function getJsonFromURL(url) {
     });
 }
 
-async function downloadFile(url) {
+async function downloadFile(url, destPath) {
     return new Promise((resolve, reject) => {
         const request = https.get(url, (response) => {
             // Handle redirects
             if (response.statusCode === 301 || response.statusCode === 302) {
-                downloadFile(response.headers.location)
+                downloadFile(response.headers.location, destPath)
                     .then(resolve)
                     .catch(reject);
                 return;
@@ -62,9 +61,24 @@ async function downloadFile(url) {
             });
 
             response.on('end', () => {
-                resolve(data);
+                try {
+                    // Wrap the content in a JSON structure
+                    const jsonContent = JSON.stringify({ content: data });
+                    fs.writeFile(destPath, jsonContent, (err) => {
+                        if (err) {
+                            reject(err);
+                            return;
+                        }
+                        resolve();
+                    });
+                } catch (err) {
+                    reject(err);
+                }
             });
-        }).on('error', reject);
+        }).on('error', (err) => {
+            fs.unlink(destPath, () => { });
+            reject(err);
+        });
 
         request.setTimeout(3000, () => {
             request.destroy();
@@ -73,35 +87,39 @@ async function downloadFile(url) {
     });
 }
 
-async function processReleases() {
+async function downloadReleases() {
     try {
-        // Create releases directory if it doesn't exist
-        if (!fs.existsSync(releasesDir)) {
-            fs.mkdirSync(releasesDir, { recursive: true });
-        }
-
         const releases = await getJsonFromURL('https://api.github.com/repos/ava-labs/icm-contracts/releases');
 
         for (const release of releases) {
-            const releaseData = {};
+            const tagDir = path.join(thisDir, release.tag_name);
 
-            for (const asset of release.assets) {
-                const filename = path.basename(asset.browser_download_url);
-                console.log(`Downloading ${filename}...`);
-                const content = await downloadFile(asset.browser_download_url);
-                releaseData[filename] = content;
+            // Create directory if it doesn't exist
+            if (!fs.existsSync(tagDir)) {
+                fs.mkdirSync(tagDir, { recursive: true });
             }
 
-            const jsonPath = path.join(releasesDir, `${release.tag_name}.json`);
-            fs.writeFileSync(jsonPath, JSON.stringify(releaseData, null, 2));
-            console.log(`Created ${jsonPath}`);
+            // Download each asset
+            for (const asset of release.assets) {
+                const filename = path.basename(asset.browser_download_url) + '.json';
+                const destPath = path.join(tagDir, filename);
+
+                // Skip if file already exists
+                if (fs.existsSync(destPath)) {
+                    console.log(`Skipping existing file: ${destPath}`);
+                    continue;
+                }
+
+                console.log(`Downloading ${filename} to ${destPath}`);
+                await downloadFile(asset.browser_download_url, destPath);
+            }
         }
 
-        console.log('All release JSONs created successfully');
+        console.log('All releases downloaded successfully');
     } catch (error) {
-        console.error('Error processing releases:', error);
+        console.error('Error downloading releases:', error);
     }
 }
 
-// Execute the process
-processReleases();
+// Execute the download
+downloadReleases();
