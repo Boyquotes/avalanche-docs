@@ -8,9 +8,16 @@ function readVersionsFile() {
     return JSON.parse(content);
 }
 
-function fetchTags() {
+async function getJsonFromURL(url) {
     return new Promise((resolve, reject) => {
-        const request = https.get('https://hub.docker.com/v2/repositories/avaplatform/subnet-evm/tags?page_size=1000', (res) => {
+        const options = {
+            headers: {
+                'User-Agent': 'avalanche-docs-version-checker',
+                'Accept': 'application/json'
+            }
+        };
+
+        const request = https.get(url, options, (res) => {
             let data = '';
 
             res.on('data', (chunk) => {
@@ -19,21 +26,12 @@ function fetchTags() {
 
             res.on('end', () => {
                 try {
-                    const parsedData = JSON.parse(data);
-                    const results = parsedData.results;
-
-                    // Find semantic version tags like v0.7.1
-                    const semanticTags = results
-                        .map(tag => tag.name)
-                        .filter(name => /^v\d+\.\d+\.\d+$/.test(name));
-
-                    if (semanticTags.length > 0) {
-                        resolve(semanticTags[0]);
-                    } else {
-                        reject(new Error('No semantic version tags found'));
+                    if (res.statusCode !== 200) {
+                        throw new Error(`HTTP ${res.statusCode}: ${data}`);
                     }
+                    resolve(JSON.parse(data));
                 } catch (e) {
-                    reject(e);
+                    reject(new Error(`Failed to parse JSON: ${e.message}. Data: ${data.substring(0, 100)}...`));
                 }
             });
         });
@@ -47,21 +45,39 @@ function fetchTags() {
     });
 }
 
+async function fetchDockerTag() {
+    const data = await getJsonFromURL('https://hub.docker.com/v2/repositories/avaplatform/subnet-evm/tags?page_size=1000');
+    const semanticTags = data.results
+        .map(tag => tag.name)
+        .filter(name => /^v\d+\.\d+\.\d+$/.test(name));
+
+    if (semanticTags.length > 0) {
+        return semanticTags[0];
+    }
+    throw new Error('No semantic version tags found');
+}
+
 async function main() {
     try {
-        const latestTag = await fetchTags();
         const versions = readVersionsFile();
-        const currentVersion = versions['avaplatform/subnet-evm'];
+        const [latestDockerTag] = await Promise.all([
+            fetchDockerTag(),
+        ]);
 
-        if (latestTag !== currentVersion) {
+        let hasUpdates = false;
+        if (latestDockerTag !== versions['docker:avaplatform/subnet-evm']) {
+            versions['docker:avaplatform/subnet-evm'] = latestDockerTag;
+            console.error(`New subnet-evm version ${latestDockerTag} is available`);
+            hasUpdates = true;
+        }
 
-            versions['avaplatform/subnet-evm'] = latestTag;
+        if (hasUpdates) {
             fs.writeFileSync('src/versions.json', JSON.stringify(versions, null, 2));
-
-            console.error(`New version ${latestTag} is available. Current version is ${currentVersion}`);
             console.error('Please run `node toolbox/update_docker_tags.js` and commit the changes');
             process.exit(1);
         }
+
+        console.log('All release versions are up to date in update_docker_tags.js');
     } catch (error) {
         console.warn('Warning:', error.message);
         process.exit(0);

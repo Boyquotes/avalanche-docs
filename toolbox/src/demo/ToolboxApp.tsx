@@ -20,6 +20,7 @@ import { useState, useEffect, ReactElement } from "react";
 import { AvalanchegoDocker } from "./examples/Nodes/AvalanchegoDocker";
 import RPCUrlForChain from "./examples/Nodes/RPCUrlForChain";
 import CreateL1 from "./examples/Guides/CreateL1";
+import DeployTeleporter from "./examples/Teleporter/DeployTeleporter";
 
 type ComponentType = {
     id: string;
@@ -123,6 +124,14 @@ const componentGroups: Record<string, ComponentType[]> = {
             label: "Initialize Validator Set",
             component: InitValidatorSet,
             fileNames: ["toolbox/src/demo/examples/InitializePoA/InitValidatorSet.tsx"]
+        }
+    ],
+    "Teleporter": [
+        {
+            id: "deployTeleporter",
+            label: "Deploy Teleporter",
+            component: DeployTeleporter,
+            fileNames: ["toolbox/src/demo/examples/Teleporter/DeployTeleporter.tsx"]
         }
     ],
     "Nodes": [
